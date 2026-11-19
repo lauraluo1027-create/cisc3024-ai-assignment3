@@ -1,0 +1,1 @@
+figures: ['fig_training_curve.png', 'fig_roc.png', 'fig_qualitative.png', 'fig_ablation.png', 'fig_params.png']

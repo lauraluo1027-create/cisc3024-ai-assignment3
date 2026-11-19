@@ -1,0 +1,6 @@
+Top-hat                    AUC=0.9323  IoU*=0.2564  IoU*@1px=0.3122  Pd@Fa=1e-4=0.152  t=0.0 ms/img
+PCA-residual (rank-3)      AUC=0.9474  IoU*=0.2411  IoU*@1px=0.2927  Pd@Fa=1e-4=0.145  t=1.6 ms/img
+IPI (RPCA/IALM)            AUC=0.9528  IoU*=0.2986  IoU*@1px=0.3392  Pd@Fa=1e-4=0.158  t=40.1 ms/img
+RPCANet-lite (K=5)         AUC=0.9905  IoU*=0.4616  IoU*@1px=0.5093  Pd@Fa=1e-4=0.138  t=7.8 ms/img
+
+-> ../results/eval_summary.{json,csv}
