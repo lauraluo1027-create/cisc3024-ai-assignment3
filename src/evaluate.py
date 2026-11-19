@@ -81,13 +81,16 @@ for nm in names:
     fa, pd, _ = roc_curve(maps)
     # Pd at Fa = 1e-4 (interp, monotone)
     idx = int(np.argmin(np.abs(fa - 1e-4)))
+    idx3 = int(np.argmin(np.abs(fa - 1e-3)))
     rows.append(dict(method=nm, auc=float(np.mean(aucs)), iou_best=best_iou(maps),
                      iou_tol1=best_iou(maps, tol=1),
-                     pd_at_fa1e4=float(pd[idx]), fa_at_point=float(fa[idx]),
+                     pd_at_fa1e4=float(pd[idx]), pd_at_fa1e3=float(pd[idx3]),
+                     fa_at_point=float(fa[idx]),
                      time_s=float(times.get(nm, 0.0))))
     curves[nm] = (fa.tolist(), pd.tolist())
     print(f"{nm:26} AUC={rows[-1]['auc']:.4f}  IoU*={rows[-1]['iou_best']:.4f}  IoU*@1px={rows[-1]['iou_tol1']:.4f}  "
-          f"Pd@Fa=1e-4={rows[-1]['pd_at_fa1e4']:.3f}  t={rows[-1]['time_s']*1000:.1f} ms/img")
+          f"Pd@Fa=1e-3={rows[-1]['pd_at_fa1e3']:.3f} Pd@Fa=1e-4={rows[-1]['pd_at_fa1e4']:.3f}  "
+          f"t={rows[-1]['time_s']*1000:.1f} ms/img")
 
 json.dump({"rows": rows, "curves": curves}, open("../results/eval_summary.json", "w"), indent=2)
 import csv

@@ -189,23 +189,25 @@ P("Metrics. AUC is the pixel-level ROC-AUC (threshold-free, the primary metric).
   "for 128x128 images, batch size 1.")
 
 H("4.3 Results", 2)
-table(["Method", "AUC", "IoU*", "IoU*@1px", "Pd @ Fa=1e-4", "ms/img"],
+table(["Method", "AUC", "IoU*", "IoU*@1px", "Pd @ Fa=1e-3", "Pd @ Fa=1e-4", "ms/img"],
       [[r["method"], f"{r['auc']:.4f}", f"{r['iou_best']:.4f}", f"{r.get('iou_tol1', 0):.4f}",
-        f"{r['pd_at_fa1e4']:.3f}",
+        f"{r.get('pd_at_fa1e3', 0):.3f}", f"{r['pd_at_fa1e4']:.3f}",
         (f"{r['time_s']*1000:.2f}" if r['time_s'] < 0.01 else f"{r['time_s']*1000:.1f}")] for r in ev],
       "Table 1. Quantitative comparison on the 60-image synthetic test set.")
 best = max(ev, key=lambda r: r["auc"])
 worst_time = max(ev, key=lambda r: r["time_s"])
 P(f"RPCANet-lite obtains the best AUC ({best['auc']:.4f}) and the best IoU ({best['iou_best']:.4f}, "
-  f"{best['iou_tol1']:.4f} with 1-pixel tolerance) of the four detectors, with only "
+  f"{best['iou_tol1']:.4f} with 1-pixel tolerance) of the four detectors with only "
   f"{log['params_count']} parameters, and it is about {worst_time['time_s']/best['time_s']:.0f}x faster "
-  f"than the classical RPCA solver IPI ({best['time_s']*1000:.1f} ms versus {worst_time['time_s']*1000:.1f} ms "
-  "per image), because the unrolled network replaces the iterative optimisation by five closed-form stages. "
-  "Top-hat is nearly free but its ROC saturates early: square structuring elements respond to cloud edges as "
-  "strongly as to targets. It should be noted honestly that at the extreme operating point Fa = 1e-4 the "
-  "ordering is different (IPI 0.158 versus 0.138 for our model): with 17-pixel targets and SNR ≈ 2 sigma, "
-  "almost no method can reach very low false-alarm rates, and the advantage of the unfolded model appears at "
-  "the moderate false-alarm rates that matter in practice (Figure 2).")
+  f"than the classical RPCA solver IPI ({best['time_s']*1000:.1f} ms versus "
+  f"{worst_time['time_s']*1000:.1f} ms per image), because five closed-form stages replace the iterative "
+  "optimisation. Top-hat is almost free but its ROC saturates early: square structuring elements respond to "
+  "cloud edges as strongly as to targets. The operating-point columns are reported honestly: at "
+  "Fa = 1e-3 the learned model detects 77 % of the target pixels versus 30 % for IPI, but at the extreme "
+  "Fa = 1e-4 all four methods collapse to Pd < 0.16 and IPI is marginally ahead (0.158 versus 0.138). With "
+  "17-pixel targets and SNR ≈ 2 sigma there are simply not enough pixels to support a false-alarm rate of "
+  "1e-4, and the advantage of the unfolded model is concentrated in the moderate false-alarm regime that "
+  "matters in practice (Figure 2).")
 pic("fig_roc.png", 4.6, "Figure 2. ROC curves on the test set (logarithmic false-alarm axis).")
 pic("fig_qualitative.png", 6.3,
     "Figure 3. Qualitative comparison. The green contour on the input marks the ground truth; the last column "
@@ -236,9 +238,10 @@ bullet("One stage already reaches AUC 0.989, because the first SVD stage removes
 bullet("The learned thresholds are interpretable and consistent with the classical theory. The relative "
        "singular-value threshold starts large (a_1 ≈ 0.18, keep few components) and decreases to a_5 ≈ 0.04, "
        "i.e. the network learns a coarse-to-fine schedule: remove the smooth background first, then refine. "
-       "The sparsity threshold ends at lam ≈ 0.41, the same order of magnitude as the classical 1/sqrt(128) "
-       "≈ 0.09-0.4 rule used by IPI, and the step sizes stay in 0.85-0.94, as expected for a stable proximal "
-       "gradient scheme.")
+       "The sparsity threshold moves within 0.41-1.04 on the standardised image (lam_1 = 1.04 down to "
+       "lam_5 = 0.41), which is the regime a practitioner would pick by hand for RPCA; it is not directly "
+       "comparable with the 1/sqrt(max(m,n)) ≈ 0.067 used by IPI because our input is standardised to unit "
+       "variance. The step sizes stay in 0.85-0.94, as expected for a stable proximal-gradient scheme.")
 bullet("Failure cases are the dimmest targets (amplitude ≈ 0.25 with sigma ≈ 0.6, i.e. 3-4 pixels at SNR ≈ 1.5), "
        "which are also missed by all three baselines; with 17-pixel ground truth a one-pixel localisation "
        "error already halves the plain IoU, which is why the 1-pixel-tolerant IoU is reported as well.")
