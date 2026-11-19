@@ -10,7 +10,7 @@ ev = json.load(open(RES + "eval_summary.json"))["rows"]
 log = json.load(open(RES + f"train_log_stage{K}.json"))
 abl = json.load(open(RES + "ablation.json"))
 repo = open(RES + "repo_url.txt").read().strip() if os.path.exists(RES + "repo_url.txt") \
-       else "https://gitee.com/<your-account>/cisc3024-ai-assignment3"
+       else "https://github.com/lauraluo1027-create/cisc3024-ai-assignment3"
 
 doc = Document()
 doc.styles["Normal"].font.name = "Calibri"
